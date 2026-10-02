@@ -1,42 +1,124 @@
 ---
 import SanityImage from "./SanityImage.astro";
+import Icon from "./Icon.astro";
 import { telHref } from "../lib/sanity";
+import type { NavItem } from "../lib/nav";
 import type { SiteSettings } from "../lib/types";
 
-interface Props { settings: SiteSettings; }
-const { settings } = Astro.props;
+interface Props { settings: SiteSettings; nav: NavItem[]; }
+const { settings, nav } = Astro.props;
 ---
 
 <header class="header">
   <div class="container header__inner">
-    <a href="#top" class="header__brand">
+    <a href="/#top" class="header__brand">
       {settings.logo ? (
         <SanityImage image={settings.logo} widths={[160, 320]} sizes="160px" class="header__logo" loading="eager" />
       ) : (
         <span>{settings.agentName}</span>
       )}
     </a>
-    <nav aria-label="Main">
-      <ul class="header__nav">
-        <li><a href="#about">About</a></li>
-        <li><a href="#listings">Listings</a></li>
-        <li><a href="#contact">Contact</a></li>
-        <li><a class="header__phone" href={telHref(settings.phone)}>{settings.phone}</a></li>
+    <nav aria-label="Main" class="header__nav">
+      <ul>
+        {nav.map((item) => <li><a href={item.href}>{item.label}</a></li>)}
       </ul>
     </nav>
+    <div class="header__actions">
+      <a class="header__phone" href={telHref(settings.phone)} aria-label={`Call ${settings.phone}`}>
+        <Icon name="phone" />
+        <span>{settings.phone}</span>
+      </a>
+      <a class="button button--small" href="/#contact">Contact</a>
+    </div>
   </div>
 </header>
 
 <style>
-  .header { position: sticky; top: 0; z-index: 10; background: color-mix(in srgb, var(--color-bg) 92%, transparent); backdrop-filter: blur(8px); border-bottom: 1px solid var(--color-border); }
-  .header__inner { display: flex; align-items: center; justify-content: space-between; gap: 1rem; min-height: 64px; }
-  .header__brand { font-family: var(--font-heading); font-size: 1.25rem; font-weight: 600; color: var(--color-text); text-decoration: none; }
-  .header__brand :global(.header__logo) { height: 40px; width: auto; }
-  .header__nav { display: flex; gap: clamp(0.75rem, 2.5vw, 1.75rem); list-style: none; margin: 0; padding: 0; font-size: 0.95rem; }
-  .header__nav a { color: var(--color-text); text-decoration: none; }
-  .header__nav a:hover { color: var(--color-accent); }
-  .header__phone { font-weight: 600; }
-  @media (max-width: 640px) {
-    .header__nav li:not(:last-child) { display: none; }
+  .header {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: color-mix(in srgb, var(--color-bg) 85%, transparent);
+    -webkit-backdrop-filter: saturate(1.5) blur(16px);
+    backdrop-filter: saturate(1.5) blur(16px);
+    box-shadow: 0 1px 0 var(--color-border);
+  }
+  /* Show the bottom line only after the page scrolls, where the browser supports it. */
+  @supports (animation-timeline: scroll()) {
+    .header {
+      animation: header-line linear both;
+      animation-timeline: scroll();
+      animation-range: 0 96px;
+    }
+    @keyframes header-line { from { box-shadow: 0 1px 0 transparent; } }
+  }
+
+  .header__inner { display: flex; align-items: center; gap: 2rem; min-height: var(--header-height); }
+
+  .header__brand {
+    min-width: 0;
+    overflow: hidden;
+    font-family: var(--font-heading);
+    font-size: 1.75rem;
+    line-height: 1.1;
+    letter-spacing: -0.01em;
+    color: var(--color-text);
+    text-decoration: none;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .header__brand :global(.header__logo) { height: 44px; width: auto; }
+
+  .header__nav { margin-left: auto; }
+  .header__nav ul { display: flex; gap: clamp(1.25rem, 2.4vw, 2.25rem); margin: 0; padding: 0; list-style: none; }
+  .header__nav a {
+    position: relative;
+    display: block;
+    padding-block: 0.5rem;
+    color: var(--color-text-soft);
+    font-size: 0.9375rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: color 0.3s;
+  }
+  .header__nav a::after {
+    content: "";
+    position: absolute;
+    inset: auto 0 0.25rem;
+    height: 1px;
+    background: currentColor;
+    transform: scaleX(0);
+    transform-origin: right;
+    transition: transform 0.4s var(--ease);
+  }
+  .header__nav a:hover { color: var(--color-text); }
+  .header__nav a:hover::after { transform: scaleX(1); transform-origin: left; }
+
+  .header__actions { display: flex; flex: none; align-items: center; gap: 1.5rem; }
+  .header__phone {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .header__phone :global(svg) { width: 1.125rem; height: 1.125rem; color: var(--color-accent); }
+
+  @media (max-width: 960px) {
+    .header__nav { display: none; }
+    .header__actions { margin-left: auto; gap: 0.75rem; }
+  }
+  @media (max-width: 600px) {
+    .header__brand { font-size: 1.5rem; }
+    .header__phone {
+      justify-content: center;
+      width: 2.75rem;
+      height: 2.75rem;
+      border: 1px solid var(--color-border);
+      border-radius: 50%;
+    }
+    .header__phone span { display: none; }
   }
 </style>

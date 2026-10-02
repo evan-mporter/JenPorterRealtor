@@ -1,41 +1,70 @@
 ---
+import Marks from "./Marks.astro";
 import type { LandingPage } from "../lib/types";
 
 interface Props { page: LandingPage; }
 const { page } = Astro.props;
 const services = page.services ?? [];
-const areas = page.areasServed ?? [];
+// Four services fit on one row. Other counts use rows of three.
+const columns = services.length === 4 ? 4 : Math.min(services.length, 3);
 ---
 
-{(services.length > 0 || areas.length > 0) && (
-  <section class="section section--alt" id="services">
+{services.length > 0 && (
+  <section class="section section--dark" id="services">
     <div class="container">
-      <h2>{page.servicesHeading || "How I can help"}</h2>
-      {services.length > 0 && (
-        <ul class="services">
-          {services.map((s) => (
-            <li class="services__item">
-              <h3>{s.title}</h3>
-              {s.description && <p>{s.description}</p>}
-            </li>
-          ))}
-        </ul>
-      )}
-      {areas.length > 0 && (
-        <div class="areas">
-          <h3>Areas served</h3>
-          <ul class="areas__list">{areas.map((a) => <li>{a}</li>)}</ul>
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Services</p>
+          <h2><Marks text={page.servicesHeading || "How I can help"} /></h2>
         </div>
-      )}
+      </div>
+      <ol class="services" style={`--columns: ${columns}`}>
+        {services.map((s, i) => (
+          <li class="services__item reveal">
+            <span class="services__number" aria-hidden="true">{String(i + 1).padStart(2, "0")}</span>
+            <h3>{s.title}</h3>
+            {s.description && <p>{s.description}</p>}
+          </li>
+        ))}
+      </ol>
     </div>
   </section>
 )}
 
 <style>
-  .services { list-style: none; padding: 0; margin: 2rem 0 0; display: grid; gap: 1.25rem; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
-  .services__item { padding: 1.5rem; border: 1px solid var(--color-border); border-radius: var(--radius); background: var(--color-bg); }
-  .services__item p { color: var(--color-muted); margin: 0; }
-  .areas { margin-top: 3rem; }
-  .areas__list { list-style: none; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: 0.5rem; }
-  .areas__list li { padding: 0.35em 0.9em; border-radius: 999px; border: 1px solid var(--color-border); background: var(--color-bg); font-size: 0.95rem; }
+  .services { display: grid; gap: 0 clamp(2rem, 4vw, 4rem); margin: 0; padding: 0; list-style: none; }
+  @media (min-width: 700px) { .services { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (min-width: 1000px) { .services { grid-template-columns: repeat(var(--columns), minmax(0, 1fr)); } }
+
+  .services__item { position: relative; padding: 2rem 0 3rem; border-top: 1px solid var(--color-on-dark-border); }
+  .services__item::before {
+    content: "";
+    position: absolute;
+    top: -1px;
+    left: 0;
+    width: 100%;
+    height: 1px;
+    background: var(--color-accent-soft);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.7s var(--ease);
+  }
+  .services__item:hover::before { transform: scaleX(1); }
+
+  .services__number {
+    display: block;
+    margin-bottom: clamp(1.75rem, 4vw, 3rem);
+    color: var(--color-accent-soft);
+    font-family: var(--font-heading);
+    font-size: 1.25rem;
+    font-style: italic;
+  }
+  .services__item h3 {
+    margin-bottom: 0.75rem;
+    font-family: var(--font-heading);
+    font-size: clamp(1.875rem, 1.5rem + 1vw, 2.5rem);
+    font-weight: 400;
+    line-height: 1.05;
+  }
+  .services__item p { max-width: 34ch; margin: 0; color: var(--color-on-dark-muted); }
 </style>

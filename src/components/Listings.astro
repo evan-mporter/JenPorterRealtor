@@ -1,37 +1,63 @@
 ---
 import SanityImage from "./SanityImage.astro";
+import Icon from "./Icon.astro";
+import Marks from "./Marks.astro";
 import { formatPrice } from "../lib/sanity";
 import type { LandingPage, Listing } from "../lib/types";
 
 interface Props { page: LandingPage; listings: Listing[]; }
 const { page, listings } = Astro.props;
+
+const plural = (n: number, word: string) => `${word}${n === 1 ? "" : "s"}`;
+// A single listing gets a wide layout. More listings share rows of up to three.
+const single = listings.length === 1;
+const sizes =
+  single ? "(min-width: 900px) 760px, 100vw"
+  : listings.length === 2 ? "(min-width: 700px) 50vw, 100vw"
+  : "(min-width: 1000px) 33vw, (min-width: 700px) 50vw, 100vw";
 ---
 
 {listings.length > 0 && (
   <section class="section" id="listings">
     <div class="container">
-      <h2>{page.listingsHeading || "Featured listings"}</h2>
-      {page.listingsIntro && <p class="section-intro">{page.listingsIntro}</p>}
-      <ul class="listings">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Properties</p>
+          <h2><Marks text={page.listingsHeading || "Featured listings"} /></h2>
+        </div>
+        {page.listingsIntro && <p>{page.listingsIntro}</p>}
+      </div>
+      <ul class:list={["listings", { "listings--single": single }]}>
         {listings.map((l) => {
           const facts = [
-            l.beds != null && `${l.beds} bd`,
-            l.baths != null && `${l.baths} ba`,
-            l.sqft != null && `${l.sqft.toLocaleString("en-US")} sq ft`,
-          ].filter(Boolean);
+            l.beds != null && { icon: "bed" as const, value: String(l.beds), label: plural(l.beds, "Bed") },
+            l.baths != null && { icon: "bath" as const, value: String(l.baths), label: plural(l.baths, "Bath") },
+            l.sqft != null && { icon: "area" as const, value: l.sqft.toLocaleString("en-US"), label: "Sq Ft" },
+          ].filter((f) => f !== false);
           return (
-            <li class="card">
-              <div class="card__media">
-                <SanityImage image={l.photo} widths={[400, 640, 960]} sizes="(min-width: 1000px) 340px, (min-width: 640px) 50vw, 100vw" aspect={3 / 2} class="card__img" />
-                {l.status === "pending" && <span class="card__badge">Pending</span>}
+            <li class="listing reveal">
+              <div class="listing__media">
+                <SanityImage image={l.photo} widths={[480, 720, 960, 1280]} sizes={sizes} aspect={4 / 3} class="listing__img" />
+                {l.status === "pending" && <span class="listing__badge">Pending</span>}
+                {l.link && <span class="listing__go" aria-hidden="true"><Icon name="arrow-up-right" /></span>}
               </div>
-              <div class="card__body">
-                <p class="card__price">{formatPrice(l.price)}</p>
-                <h3 class="card__address">
+              <div class="listing__body">
+                <p class="listing__price">{formatPrice(l.price)}</p>
+                <h3 class="listing__address">
                   {l.link ? <a href={l.link} target="_blank" rel="noopener">{l.address}</a> : l.address}
                 </h3>
-                <p class="card__city">{l.city}</p>
-                {facts.length > 0 && <p class="card__facts">{facts.join(" · ")}</p>}
+                <p class="listing__city">{l.city}</p>
+                {facts.length > 0 && (
+                  <ul class="listing__facts">
+                    {facts.map((f) => (
+                      <li>
+                        <Icon name={f.icon} />
+                        <span class="listing__fact"><span class="listing__fact-value">{f.value}</span>{" "}<span class="listing__fact-label">{f.label}</span></span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                {single && l.link && <span class="button listing__cta" aria-hidden="true">View listing<Icon name="arrow-up-right" /></span>}
               </div>
             </li>
           );
@@ -42,18 +68,106 @@ const { page, listings } = Astro.props;
 )}
 
 <style>
-  .listings { list-style: none; padding: 0; margin: 0; display: grid; gap: 1.5rem; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); }
-  .card { position: relative; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius); overflow: hidden; transition: box-shadow 0.15s; }
-  .card:hover { box-shadow: 0 8px 24px rgb(0 0 0 / 0.08); }
-  .card__media { position: relative; }
-  .card :global(.card__img) { width: 100%; aspect-ratio: 3 / 2; object-fit: cover; }
-  .card__badge { position: absolute; top: 12px; left: 12px; padding: 0.2em 0.7em; border-radius: 999px; background: var(--color-badge-pending); color: #fff; font-size: 0.8rem; font-weight: 600; }
-  .card__body { padding: 1.1rem 1.25rem 1.3rem; }
-  .card__price { font-size: 1.35rem; font-weight: 700; margin: 0 0 0.2rem; }
-  .card__address { font-family: var(--font-body); font-size: 1rem; font-weight: 600; margin: 0; }
-  .card__address a { color: inherit; text-decoration: none; }
+  .listings {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr));
+    gap: clamp(3rem, 5vw, 4rem) clamp(1.25rem, 2.5vw, 2rem);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .listing { position: relative; }
+  .listing__media { position: relative; overflow: hidden; border-radius: var(--radius); background: var(--color-bg-alt); }
+  .listing :global(.listing__img) { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; transition: transform 1.2s var(--ease); }
+  .listing:hover :global(.listing__img) { transform: scale(1.045); }
+
+  .listing__badge {
+    position: absolute;
+    top: 1rem;
+    left: 1rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5em;
+    padding: 0.45em 0.9em;
+    border-radius: 999px;
+    background: rgb(20 26 24 / 0.72);
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .listing__badge::before { content: ""; width: 0.5em; height: 0.5em; border-radius: 50%; background: var(--color-badge-pending); }
+
+  .listing__go {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    display: grid;
+    place-items: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: 50%;
+    background: var(--color-bg);
+    color: var(--color-text);
+    opacity: 0;
+    transform: scale(0.8);
+    transition: opacity 0.4s var(--ease), transform 0.4s var(--ease);
+  }
+  .listing__go :global(svg) { width: 1.25rem; height: 1.25rem; }
+  .listing:hover .listing__go, .listing:focus-within .listing__go { opacity: 1; transform: none; }
+  @media (hover: none) { .listing__go { opacity: 1; transform: none; } }
+
+  .listing__body { padding-top: 1.5rem; }
+  .listing__price { margin: 0 0 0.75rem; font-family: var(--font-heading); font-size: clamp(1.875rem, 1.6rem + 0.8vw, 2.25rem); line-height: 1; }
+  .listing__address { margin: 0; font-size: 1.0625rem; }
+  .listing__address a { text-decoration: none; }
   /* Make the whole card clickable when a link exists. */
-  .card__address a::after { content: ""; position: absolute; inset: 0; }
-  .card__city, .card__facts { color: var(--color-muted); margin: 0; font-size: 0.95rem; }
-  .card__facts { margin-top: 0.5rem; }
+  .listing__address a::after { content: ""; position: absolute; inset: 0; z-index: 1; }
+  .listing__address a:focus-visible { outline: none; }
+  .listing__address a:focus-visible::after { outline: 2px solid var(--color-accent); outline-offset: 6px; border-radius: var(--radius); }
+  .listing__city { margin: 0.125rem 0 0; color: var(--color-muted); font-size: 0.9375rem; }
+
+  .listing__facts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.5rem;
+    margin: 1.25rem 0 0;
+    padding: 1.25rem 0 0;
+    border-top: 1px solid var(--color-border);
+    color: var(--color-text-soft);
+    font-size: 0.875rem;
+    list-style: none;
+  }
+  .listing__facts li { display: inline-flex; align-items: center; gap: 0.5rem; }
+  .listing__facts :global(svg) { width: 1.125rem; height: 1.125rem; color: var(--color-accent); }
+
+  /* One listing: photo beside the details, with the facts as large figures */
+  @media (min-width: 900px) {
+    .listings--single .listing { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: clamp(2.5rem, 5vw, 4.5rem); align-items: center; }
+    .listings--single .listing__body { padding-top: 0; }
+  }
+  .listings--single .listing__go { display: none; }
+  .listings--single .listing__price { margin-bottom: 1rem; font-size: clamp(2.5rem, 2rem + 1.5vw, 3.5rem); }
+  .listings--single .listing__address { font-size: 1.25rem; }
+  .listings--single .listing__facts {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0;
+    margin-top: 2rem;
+    padding: 0;
+    border-bottom: 1px solid var(--color-border);
+  }
+  .listings--single .listing__facts li { flex-direction: column; align-items: flex-start; gap: 0.75rem; padding: 1.5rem 0.75rem 1.5rem 1.25rem; }
+  .listings--single .listing__fact { display: flex; flex-direction: column; gap: 0.375rem; }
+  .listings--single .listing__facts li:first-child { padding-left: 0; }
+  .listings--single .listing__facts li + li { border-left: 1px solid var(--color-border); }
+  .listings--single .listing__fact-value { color: var(--color-text); font-family: var(--font-heading); font-size: 2rem; line-height: 1; }
+  .listings--single .listing__fact-label { color: var(--color-muted); font-size: 0.75rem; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; }
+  .listing__cta { margin-top: 2rem; }
+  .listing:hover .listing__cta { background: var(--button-hover-bg); border-color: var(--button-hover-border); }
+  .listing:hover .listing__cta :global(svg) { transform: translate(2px, -2px); }
 </style>

@@ -1,0 +1,7 @@
+---
+// Sets ® and ™ small and raised, as in print. Large serif headings otherwise show them at full size.
+interface Props { text: string; }
+const parts = Astro.props.text.split(/([®™])/);
+---
+
+{parts.map((part) => (part === "®" || part === "™" ? <sup class="mark">{part}</sup> : part))}

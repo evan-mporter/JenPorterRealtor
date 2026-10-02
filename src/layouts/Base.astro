@@ -1,14 +1,19 @@
 ---
 import "../styles/global.css";
+import { Font } from "astro:assets";
 import { urlFor } from "../lib/sanity";
 import type { SiteSettings } from "../lib/types";
 
 interface Props {
   settings: SiteSettings;
+  /** Replaces the SEO title from Sanity. Example: the 404 page. */
+  title?: string;
+  /** Asks search engines not to index the page. */
+  noindex?: boolean;
 }
 
-const { settings } = Astro.props;
-const title = settings.seoTitle || `${settings.agentName} | ${settings.brokerage}`;
+const { settings, title: pageTitle, noindex = false } = Astro.props;
+const title = pageTitle || settings.seoTitle || `${settings.agentName} | ${settings.brokerage}`;
 const description = settings.seoDescription ?? "";
 const canonical = new URL(Astro.url.pathname, Astro.site).href;
 const ogImage = settings.ogImage && "asset" in (settings.ogImage as object)
@@ -36,8 +41,12 @@ const jsonLd = {
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
     {description && <meta name="description" content={description} />}
+    {noindex && <meta name="robots" content="noindex" />}
     <link rel="canonical" href={canonical} />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="theme-color" content="#f7f4ee" />
+    <Font cssVariable="--font-instrument-serif" preload={[{ style: "normal" }]} />
+    <Font cssVariable="--font-inter" preload />
     <meta property="og:type" content="website" />
     <meta property="og:title" content={title} />
     {description && <meta property="og:description" content={description} />}

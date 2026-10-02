@@ -1,25 +1,93 @@
 ---
 import { PortableText } from "astro-portabletext";
 import SanityImage from "./SanityImage.astro";
-import type { LandingPage } from "../lib/types";
+import Icon from "./Icon.astro";
+import Marks from "./Marks.astro";
+import { telHref } from "../lib/sanity";
+import type { LandingPage, SiteSettings } from "../lib/types";
 
-interface Props { page: LandingPage; }
-const { page } = Astro.props;
+interface Props { page: LandingPage; settings: SiteSettings; }
+const { page, settings } = Astro.props;
+const credits = [settings.title, settings.brokerage].filter(Boolean).join(" · ");
 ---
 
 <section class="section" id="about">
   <div class="container about">
-    <SanityImage image={page.aboutPhoto} class="about__photo" widths={[360, 600, 900]} sizes="(min-width: 800px) 380px, 100vw" aspect={4 / 5} />
-    <div class="about__text">
-      <h2>{page.aboutHeading || "About me"}</h2>
-      {page.aboutBody && <PortableText value={page.aboutBody} />}
+    <div class="about__media reveal">
+      <SanityImage image={page.aboutPhoto} class="about__photo" widths={[400, 640, 960, 1200]} sizes="(min-width: 880px) 460px, (min-width: 520px) 480px, 100vw" aspect={4 / 5} />
+      <div class="about__card">
+        <p class="about__card-name">{settings.agentName}</p>
+        <p class="about__card-meta">{credits}</p>
+      </div>
+    </div>
+    <div class="about__text reveal">
+      <p class="eyebrow">Meet your agent</p>
+      <h2><Marks text={page.aboutHeading || "About me"} /></h2>
+      {page.aboutBody && <div class="prose"><PortableText value={page.aboutBody} /></div>}
+      <div class="about__actions">
+        <a class="button" href="#contact">{page.ctaLabel || "Get in touch"}<Icon name="arrow-right" /></a>
+        <a class="about__phone" href={telHref(settings.phone)}><Icon name="phone" />{settings.phone}</a>
+      </div>
     </div>
   </div>
 </section>
 
 <style>
-  .about { display: grid; gap: clamp(2rem, 5vw, 4rem); align-items: center; }
-  @media (min-width: 800px) { .about { grid-template-columns: 380px 1fr; } }
-  .about :global(.about__photo) { width: 100%; aspect-ratio: 4 / 5; object-fit: cover; border-radius: var(--radius); }
-  .about__text { max-width: 62ch; }
+  .about { display: grid; gap: clamp(3.5rem, 8vw, 7rem); align-items: start; }
+  /* The photo stays in view while a long bio scrolls past. A short bio centers beside the photo. */
+  @media (min-width: 880px) {
+    .about { grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); }
+    .about__media { position: sticky; top: calc(var(--header-height) + 2.5rem); }
+    .about__text { align-self: center; }
+  }
+
+  /* Arch-topped portrait with an offset outline behind it */
+  .about__media {
+    --arch: 50% 50% var(--radius) var(--radius) / 40% 40% var(--radius) var(--radius);
+    position: relative;
+    isolation: isolate;
+    /* Leaves room for the outline, which sits 1.25rem to the right */
+    width: min(100% - 1.25rem, 30rem);
+  }
+  .about__media::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border: 1px solid var(--color-accent);
+    border-radius: var(--arch);
+    opacity: 0.55;
+    transform: translate(1.25rem, 1.25rem);
+  }
+  .about :global(.about__photo) { width: 100%; aspect-ratio: 4 / 5; object-fit: cover; border-radius: var(--arch); }
+
+  .about__card {
+    position: absolute;
+    left: clamp(-1.5rem, -2vw, -0.75rem);
+    bottom: 2rem;
+    max-width: calc(100% - 1rem);
+    padding: 1rem 1.375rem;
+    border-radius: var(--radius-sm);
+    background: var(--color-surface);
+    box-shadow: 0 24px 48px -24px rgb(26 29 28 / 0.35);
+  }
+  .about__card-name { margin: 0; font-family: var(--font-heading); font-size: 1.5rem; line-height: 1.15; }
+  .about__card-meta { margin: 0.25rem 0 0; color: var(--color-muted); font-size: 0.8125rem; line-height: 1.4; }
+  .about__card-meta:empty { display: none; }
+
+  .about__text { max-width: 38rem; }
+  .about__text h2 { margin-bottom: 1.75rem; }
+
+  .about__actions { display: flex; flex-wrap: wrap; align-items: center; gap: 1.25rem 2rem; margin-top: 2.75rem; }
+  .about__phone {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-weight: 600;
+    text-decoration: underline;
+    text-decoration-color: var(--color-border);
+    transition: text-decoration-color 0.3s;
+  }
+  .about__phone:hover { text-decoration-color: var(--color-accent); }
+  .about__phone :global(svg) { width: 1.125rem; height: 1.125rem; color: var(--color-accent); }
 </style>

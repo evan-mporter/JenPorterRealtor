@@ -1,0 +1,30 @@
+---
+import Base from "../layouts/Base.astro";
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+import Icon from "../components/Icon.astro";
+import { getPageContent } from "../lib/sanity";
+import { getNav } from "../lib/nav";
+
+const { settings, page, listings } = await getPageContent();
+const nav = getNav(page, listings);
+---
+
+<Base settings={settings} title={`Page not found | ${settings.agentName}`} noindex>
+  <Header settings={settings} nav={nav} />
+  <main class="not-found">
+    <div class="container">
+      <p class="eyebrow">Error 404</p>
+      <h1>This page can't be found.</h1>
+      <p class="not-found__text">The link may be broken, or the page may have moved.</p>
+      <a class="button" href="/">Back to the home page<Icon name="arrow-right" /></a>
+    </div>
+  </main>
+  <Footer settings={settings} nav={nav} />
+</Base>
+
+<style>
+  .not-found { display: grid; align-items: center; min-height: calc(80svh - var(--header-height)); padding-block: var(--section-space); }
+  .not-found h1 { max-width: 12ch; margin-bottom: 1.5rem; font-size: clamp(3rem, 1.75rem + 5vw, 6.5rem); }
+  .not-found__text { margin-bottom: 2.5rem; color: var(--color-muted); font-size: 1.1875rem; }
+</style>

@@ -96,11 +96,13 @@ sanity.config.ts            Studio configuration
 sanity.cli.ts               Sanity CLI configuration
 src/
   pages/index.astro         The landing page
-  components/               One component for each page section
+  pages/404.astro           The "page not found" page
+  components/               One component for each page section, plus small shared parts (icons, ® marks)
   layouts/Base.astro        <head>, SEO tags, structured data
   lib/sanity.ts             GROQ query, image URLs, sample-content fallback
   lib/sample.ts             Sample content for local development
   lib/types.ts              TypeScript types for the content
+  lib/nav.ts                Header and footer links to the sections that have content
   sanity/schemaTypes/       Content model (what the editor can change)
   sanity/structure.ts       Studio sidebar
   styles/global.css         Brand colors, fonts, spacing
@@ -109,6 +111,7 @@ src/
 ## Customize
 
 - **Brand:** change the variables at the top of `src/styles/global.css`.
+- **Fonts:** change `fonts` in `astro.config.mjs`. Astro downloads the fonts at build time and serves them from the site.
 - **Layout:** edit the components in `src/components/`.
 - **Editable fields:** edit the schemas in `src/sanity/schemaTypes/`. Then update `src/lib/types.ts` and the components. Run `npm run sanity:validate` and `npm run check`.
 

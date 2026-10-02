@@ -1,0 +1,48 @@
+---
+import type { LandingPage } from "../lib/types";
+
+interface Props { page: LandingPage; }
+const { page } = Astro.props;
+const areas = page.areasServed ?? [];
+---
+
+{areas.length > 0 && (
+  <section class="areas" aria-labelledby="areas-heading">
+    <div class="container">
+      <h2 class="eyebrow areas__label" id="areas-heading">Areas served</h2>
+      <ul class="areas__list reveal">
+        {areas.map((a) => <li>{a}</li>)}
+      </ul>
+    </div>
+  </section>
+)}
+
+<style>
+  /* The next section adds the space below. */
+  .areas { padding-top: clamp(4rem, 8vw, 6.5rem); text-align: center; }
+  .areas__label { justify-content: center; }
+  .areas__label::after { content: ""; flex: none; width: 2.25rem; height: 1px; background: currentColor; }
+  .areas__list {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 0.25rem 0;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-family: var(--font-heading);
+    font-size: clamp(1.875rem, 1.2rem + 2.4vw, 3.25rem);
+    font-style: italic;
+    line-height: 1.25;
+  }
+  .areas__list li { display: inline-flex; align-items: center; }
+  .areas__list li + li::before {
+    content: "";
+    width: 0.2em;
+    height: 0.2em;
+    margin-inline: 0.75em;
+    background: var(--color-accent);
+    transform: rotate(45deg);
+  }
+</style>
