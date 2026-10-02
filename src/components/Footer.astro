@@ -1,0 +1,37 @@
+---
+import type { SiteSettings } from "../lib/types";
+
+interface Props { settings: SiteSettings; }
+const { settings } = Astro.props;
+const year = new Date().getFullYear();
+---
+
+<footer class="footer">
+  <div class="container">
+    <div class="footer__top">
+      <p>
+        <strong>{settings.agentName}</strong>{settings.title && `, ${settings.title}`}<br />
+        {settings.brokerage}
+        {settings.licenseNumber && <><br />License #{settings.licenseNumber}</>}
+      </p>
+      {settings.socialLinks && settings.socialLinks.length > 0 && (
+        <ul class="footer__social">
+          {settings.socialLinks.map((l) => (
+            <li><a href={l.url} target="_blank" rel="noopener">{l.platform}</a></li>
+          ))}
+        </ul>
+      )}
+    </div>
+    {settings.disclaimer && <p class="footer__disclaimer">{settings.disclaimer}</p>}
+    <p class="footer__copy">© {year} {settings.agentName}</p>
+  </div>
+</footer>
+
+<style>
+  .footer { padding-block: 3rem; font-size: 0.9rem; color: var(--color-muted); }
+  .footer__top { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 1.5rem; }
+  .footer strong { color: var(--color-text); }
+  .footer__social { display: flex; flex-wrap: wrap; gap: 1rem; list-style: none; margin: 0; padding: 0; }
+  .footer__disclaimer { white-space: pre-line; margin-top: 1.5rem; max-width: 80ch; }
+  .footer__copy { margin: 1.5rem 0 0; }
+</style>

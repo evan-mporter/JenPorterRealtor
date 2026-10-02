@@ -1,0 +1,53 @@
+---
+import { urlFor } from "../lib/sanity";
+import type { ImageWithAlt } from "../lib/types";
+
+interface Props {
+  image?: ImageWithAlt;
+  /** Rendered widths for srcset, in px. */
+  widths?: number[];
+  sizes?: string;
+  /** Width / height. Example: 4 / 3. Omit to keep the original ratio. */
+  aspect?: number;
+  class?: string;
+  loading?: "lazy" | "eager";
+  fetchpriority?: "high" | "low" | "auto";
+}
+
+const { image, widths = [480, 800, 1200, 1600], sizes = "100vw", aspect, class: className, loading = "lazy", fetchpriority } = Astro.props;
+
+const hasAsset = Boolean(image && typeof image === "object" && "asset" in image && image.asset);
+
+const src = (w: number) => {
+  let b = urlFor(image!).width(w).fit("crop");
+  if (aspect) b = b.height(Math.round(w / aspect));
+  return b.url();
+};
+---
+
+{
+  hasAsset ? (
+    <img
+      class={className}
+      src={src(widths[Math.min(1, widths.length - 1)])}
+      srcset={widths.map((w) => `${src(w)} ${w}w`).join(", ")}
+      sizes={sizes}
+      alt={image?.alt ?? ""}
+      loading={loading}
+      decoding="async"
+      fetchpriority={fetchpriority}
+      width={widths[widths.length - 1]}
+      height={aspect ? Math.round(widths[widths.length - 1] / aspect) : undefined}
+    />
+  ) : (
+    <div class:list={[className, "img-placeholder"]} style={aspect ? `aspect-ratio: ${aspect}` : undefined} role="presentation" />
+  )
+}
+
+<style>
+  .img-placeholder {
+    background: linear-gradient(135deg, #d9d4cc, #b8c4c9);
+    width: 100%;
+    min-height: 120px;
+  }
+</style>

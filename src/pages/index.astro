@@ -1,0 +1,29 @@
+---
+import Base from "../layouts/Base.astro";
+import SampleBanner from "../components/SampleBanner.astro";
+import Header from "../components/Header.astro";
+import Hero from "../components/Hero.astro";
+import About from "../components/About.astro";
+import Services from "../components/Services.astro";
+import Listings from "../components/Listings.astro";
+import Testimonials from "../components/Testimonials.astro";
+import Contact from "../components/Contact.astro";
+import Footer from "../components/Footer.astro";
+import { getPageContent } from "../lib/sanity";
+
+const { settings, page, listings, isSample } = await getPageContent();
+---
+
+<Base settings={settings}>
+  {isSample && <SampleBanner />}
+  <Header settings={settings} />
+  <main>
+    <Hero page={page} settings={settings} />
+    <About page={page} />
+    <Services page={page} />
+    <Listings page={page} listings={listings} />
+    <Testimonials page={page} />
+    <Contact page={page} settings={settings} />
+  </main>
+  <Footer settings={settings} />
+</Base>

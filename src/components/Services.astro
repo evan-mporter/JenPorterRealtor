@@ -1,0 +1,41 @@
+---
+import type { LandingPage } from "../lib/types";
+
+interface Props { page: LandingPage; }
+const { page } = Astro.props;
+const services = page.services ?? [];
+const areas = page.areasServed ?? [];
+---
+
+{(services.length > 0 || areas.length > 0) && (
+  <section class="section section--alt" id="services">
+    <div class="container">
+      <h2>{page.servicesHeading || "How I can help"}</h2>
+      {services.length > 0 && (
+        <ul class="services">
+          {services.map((s) => (
+            <li class="services__item">
+              <h3>{s.title}</h3>
+              {s.description && <p>{s.description}</p>}
+            </li>
+          ))}
+        </ul>
+      )}
+      {areas.length > 0 && (
+        <div class="areas">
+          <h3>Areas served</h3>
+          <ul class="areas__list">{areas.map((a) => <li>{a}</li>)}</ul>
+        </div>
+      )}
+    </div>
+  </section>
+)}
+
+<style>
+  .services { list-style: none; padding: 0; margin: 2rem 0 0; display: grid; gap: 1.25rem; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+  .services__item { padding: 1.5rem; border: 1px solid var(--color-border); border-radius: var(--radius); background: var(--color-bg); }
+  .services__item p { color: var(--color-muted); margin: 0; }
+  .areas { margin-top: 3rem; }
+  .areas__list { list-style: none; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: 0.5rem; }
+  .areas__list li { padding: 0.35em 0.9em; border-radius: 999px; border: 1px solid var(--color-border); background: var(--color-bg); font-size: 0.95rem; }
+</style>

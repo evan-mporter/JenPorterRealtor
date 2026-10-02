@@ -1,0 +1,25 @@
+---
+import { PortableText } from "astro-portabletext";
+import SanityImage from "./SanityImage.astro";
+import type { LandingPage } from "../lib/types";
+
+interface Props { page: LandingPage; }
+const { page } = Astro.props;
+---
+
+<section class="section" id="about">
+  <div class="container about">
+    <SanityImage image={page.aboutPhoto} class="about__photo" widths={[360, 600, 900]} sizes="(min-width: 800px) 380px, 100vw" aspect={4 / 5} />
+    <div class="about__text">
+      <h2>{page.aboutHeading || "About me"}</h2>
+      {page.aboutBody && <PortableText value={page.aboutBody} />}
+    </div>
+  </div>
+</section>
+
+<style>
+  .about { display: grid; gap: clamp(2rem, 5vw, 4rem); align-items: center; }
+  @media (min-width: 800px) { .about { grid-template-columns: 380px 1fr; } }
+  .about :global(.about__photo) { width: 100%; aspect-ratio: 4 / 5; object-fit: cover; border-radius: var(--radius); }
+  .about__text { max-width: 62ch; }
+</style>

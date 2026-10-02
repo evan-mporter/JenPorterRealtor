@@ -1,0 +1,52 @@
+---
+import "../styles/global.css";
+import { urlFor } from "../lib/sanity";
+import type { SiteSettings } from "../lib/types";
+
+interface Props {
+  settings: SiteSettings;
+}
+
+const { settings } = Astro.props;
+const title = settings.seoTitle || `${settings.agentName} | ${settings.brokerage}`;
+const description = settings.seoDescription ?? "";
+const canonical = new URL(Astro.url.pathname, Astro.site).href;
+const ogImage = settings.ogImage && "asset" in (settings.ogImage as object)
+  ? urlFor(settings.ogImage).width(1200).height(630).fit("crop").url()
+  : undefined;
+
+// Structured data for local search results.
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "RealEstateAgent",
+  name: settings.agentName,
+  telephone: settings.phone,
+  email: settings.email,
+  url: canonical,
+  ...(settings.officeAddress ? { address: settings.officeAddress.replace(/\n/g, ", ") } : {}),
+  ...(settings.socialLinks?.length ? { sameAs: settings.socialLinks.map((l) => l.url) } : {}),
+  parentOrganization: { "@type": "Organization", name: settings.brokerage },
+};
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    {description && <meta name="description" content={description} />}
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    {description && <meta property="og:description" content={description} />}
+    <meta property="og:url" content={canonical} />
+    {ogImage && <meta property="og:image" content={ogImage} />}
+    <meta name="twitter:card" content={ogImage ? "summary_large_image" : "summary"} />
+    <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+  </head>
+  <body>
+    <slot />
+  </body>
+</html>

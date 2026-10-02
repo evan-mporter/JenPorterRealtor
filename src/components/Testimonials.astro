@@ -1,0 +1,36 @@
+---
+import type { LandingPage } from "../lib/types";
+
+interface Props { page: LandingPage; }
+const { page } = Astro.props;
+const items = page.testimonials ?? [];
+---
+
+{items.length > 0 && (
+  <section class="section section--alt" id="testimonials">
+    <div class="container">
+      <h2>{page.testimonialsHeading || "What clients say"}</h2>
+      <ul class="quotes">
+        {items.map((t) => (
+          <li>
+            <figure class="quote">
+              <blockquote>“{t.quote}”</blockquote>
+              <figcaption>
+                <strong>{t.name}</strong>
+                {t.context && <span> · {t.context}</span>}
+              </figcaption>
+            </figure>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+)}
+
+<style>
+  .quotes { list-style: none; padding: 0; margin: 2rem 0 0; display: grid; gap: 1.5rem; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); }
+  .quote { margin: 0; padding: 1.75rem; border-radius: var(--radius); background: var(--color-bg); border: 1px solid var(--color-border); height: 100%; }
+  .quote blockquote { margin: 0 0 1rem; font-family: var(--font-heading); font-size: 1.15rem; line-height: 1.5; }
+  .quote figcaption { color: var(--color-muted); font-size: 0.95rem; }
+  .quote strong { color: var(--color-text); }
+</style>

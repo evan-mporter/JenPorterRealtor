@@ -1,0 +1,29 @@
+---
+import SanityImage from "./SanityImage.astro";
+import type { LandingPage, SiteSettings } from "../lib/types";
+
+interface Props { page: LandingPage; settings: SiteSettings; }
+const { page, settings } = Astro.props;
+---
+
+<section class="hero" id="top">
+  <SanityImage image={page.heroImage} class="hero__bg" widths={[800, 1280, 1920, 2560]} sizes="100vw" loading="eager" fetchpriority="high" />
+  <div class="hero__overlay"></div>
+  <div class="container hero__content">
+    <p class="hero__eyebrow">{settings.agentName}{settings.title && ` · ${settings.title}`} · {settings.brokerage}</p>
+    <h1>{page.heroHeadline}</h1>
+    {page.heroSubheadline && <p class="hero__sub">{page.heroSubheadline}</p>}
+    <a class="button" href="#contact">{page.ctaLabel || "Get in touch"}</a>
+  </div>
+</section>
+
+<style>
+  .hero { position: relative; display: grid; align-items: end; min-height: min(88vh, 760px); color: #fff; overflow: hidden; }
+  .hero :global(.hero__bg) { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .hero :global(.img-placeholder.hero__bg) { background: linear-gradient(135deg, #2c4a55, #6f8f8c); }
+  .hero__overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgb(0 0 0 / 0.65), rgb(0 0 0 / 0.1) 70%); }
+  .hero__content { position: relative; padding-block: clamp(48px, 10vw, 120px); }
+  .hero__eyebrow { font-size: 0.9rem; letter-spacing: 0.06em; text-transform: uppercase; opacity: 0.9; }
+  .hero h1 { max-width: 16ch; }
+  .hero__sub { font-size: 1.2rem; max-width: 46ch; opacity: 0.95; margin-bottom: 1.75rem; }
+</style>

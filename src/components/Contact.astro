@@ -1,0 +1,33 @@
+---
+import { telHref } from "../lib/sanity";
+import type { LandingPage, SiteSettings } from "../lib/types";
+
+interface Props { page: LandingPage; settings: SiteSettings; }
+const { page, settings } = Astro.props;
+---
+
+<section class="section contact" id="contact">
+  <div class="container contact__inner">
+    <div>
+      <h2>{page.contactHeading || "Let's talk"}</h2>
+      {page.contactBody && <p class="contact__body">{page.contactBody}</p>}
+    </div>
+    <div class="contact__actions">
+      <a class="button" href={telHref(settings.phone)}>Call {settings.phone}</a>
+      <a class="button button--ghost" href={`mailto:${settings.email}`}>Email {settings.email}</a>
+      {settings.officeAddress && <address>{settings.officeAddress}</address>}
+    </div>
+  </div>
+</section>
+
+<style>
+  .contact { background: var(--color-accent); color: var(--color-accent-contrast); }
+  .contact .button { background: var(--color-accent-contrast); color: var(--color-accent); }
+  .contact .button--ghost { background: transparent; color: var(--color-accent-contrast); }
+  .contact__inner { display: grid; gap: 2rem; align-items: center; }
+  @media (min-width: 800px) { .contact__inner { grid-template-columns: 1.2fr 1fr; } }
+  .contact__body { font-size: 1.15rem; opacity: 0.92; max-width: 46ch; }
+  .contact__actions { display: flex; flex-direction: column; align-items: flex-start; gap: 0.85rem; }
+  .contact__actions .button { overflow-wrap: anywhere; }
+  address { font-style: normal; white-space: pre-line; opacity: 0.9; margin-top: 0.5rem; }
+</style>
